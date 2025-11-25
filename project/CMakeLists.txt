@@ -3,4 +3,10 @@ project(project C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(project main.c)
+add_executable(project main.c
+        algoritmo.c
+        algoritmo.h
+        funcao.c
+        funcao.h
+        utils.c
+        utils.h)
