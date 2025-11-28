@@ -4,9 +4,9 @@ project(project C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(project main.c
-        algoritmo.c
-        algoritmo.h
-        funcao.c
-        funcao.h
+        pesquisa_local/algoritmo_pesquisa_local.c
+        pesquisa_local/algoritmo_pesquisa_local.h
+        funcao_problema/funcao.c
+        funcao_problema/funcao.h
         utils.c
         utils.h)

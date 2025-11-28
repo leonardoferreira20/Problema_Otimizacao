@@ -13,70 +13,89 @@
 // Leitura do ficheiro de input
 // Recebe: nome do ficheiro, numero de vertices (ptr), numero de iteracoes (ptr)
 // Devolve a matriz de adjacencias
-int* init_dados(char *nome, int *n, int *iter)
+float* init_dados(char *nome_fich, int *vert, int *m)
 {
     FILE *f;
-    int *p, *q;
-    int i, j;
+    int C, i, j;
+    int ei_num, ej_num;
+    char ei[10], ej[10];
+    float distancia;
+    float *mat;
 
-    f=fopen(nome, "r");
+    f = fopen(nome_fich, "r");
     if(!f)
     {
         printf("Erro no acesso ao ficheiro dos dados\n");
         exit(1);
     }
-    // Numero de iteracoes
-    fscanf(f, " %d", iter);
-    // Numero de vertices
-    fscanf(f, " %d", n);
-    // Alocacao dinamica da matriz
-    p = malloc(sizeof(int)*(*n)*(*n));
-    if(!p)
+
+    // Lê primeira linha: C (candidaturas) e m (locais a construir)
+    fscanf(f, "%d %d", &C, m);
+    *vert = C;
+
+    // Aloca matriz de distâncias (C x C)
+    mat = malloc(sizeof(float) * C * C);
+    if(!mat)
     {
         printf("Erro na alocacao de memoria\n");
         exit(1);
     }
-    q=p;
-    // Preenchimento da matriz
-    for(i=0; i<*n; i++)
-        for(j=0; j<*n; j++)
-            fscanf(f, " %d", q++);
+
+    // Inicializa matriz com zeros
+    for(i = 0; i < C * C; i++)
+        mat[i] = 0.0;
+
+    // Lê as distâncias entre pares de pontos
+    while(fscanf(f, "%s %s %f", ei, ej, &distancia) == 3)
+    {
+        // Extrai número do ponto (e1 -> 0, e2 -> 1, etc.)
+        ei_num = atoi(ei + 1) - 1;  // +1 pula o 'e', -1 para índice base 0
+        ej_num = atoi(ej + 1) - 1;
+
+        // Preenche matriz simetricamente (dist(i,j) = dist(j,i))
+        *(mat + ei_num * C + ej_num) = distancia;
+        *(mat + ej_num * C + ei_num) = distancia;
+    }
+
     fclose(f);
-    return p;
+    return mat;
 }
 
 // Gera a solucao inicial
 // Parametros: solucao, numero de vertices
-void gera_sol_inicial(int *sol, int v)
+void gera_sol_inicial(int sol[], int vert, int m)
 {
-    int i, x;
+    int i, count, pos;
 
-    for(i=0; i<v; i++)
-        sol[i]=0;
-    for(i=0; i<v/2; i++)
+    // Inicializa tudo com 0 (nenhum ponto selecionado)
+    for(i = 0; i < vert; i++)
+        sol[i] = 0;
+
+    // Seleciona aleatoriamente m pontos diferentes
+    count = 0;
+    while(count < m)
     {
-        do
-            x = random_l_h(0, v-1);
-        while(sol[x] != 0);
-        sol[x]=1;
+        pos = random_l_h(0, vert - 1);
+        if(sol[pos] == 0)  // Se ainda não está selecionado
+        {
+            sol[pos] = 1;
+            count++;
+        }
     }
 }
 
 // Escreve solucao
 // Parametros: solucao e numero de vertices
-void escreve_sol(int *sol, int vert)
+void escreve_sol(int sol[], int vert)
 {
     int i;
-
-    printf("\nConjunto A: ");
-    for(i=0; i<vert; i++)
-        if(sol[i]==0)
-            printf("%2d  ", i);
-    printf("\nConjunto B: ");
-    for(i=0; i<vert; i++)
-        if(sol[i]==1)
-            printf("%2d  ", i);
-    printf("\n");
+    printf("[ ");
+    for(i = 0; i < vert; i++)
+    {
+        if(sol[i] == 1)
+            printf("e%d ", i+1);  // Mostra e1, e2, e3...
+    }
+    printf("]\n");
 }
 
 // copia vector b para a (tamanho n)
