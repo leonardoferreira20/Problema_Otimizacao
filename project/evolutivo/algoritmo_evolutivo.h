@@ -25,6 +25,9 @@ typedef struct info_ea
     int numGenerations;    // Número de gerações
     int numGenes;          // Número de genes (C - candidaturas)
     int m;                 // Número de locais a selecionar
+    int sel_method;        // 1 = torneio, 2 = roleta
+    int crossover_method;  // 1 = uniforme, 2 = 1-ponto
+    int mutation_method;   // 1 = swap, 2 = flip
 } info_ea;
 
 // Funções principais

@@ -8,6 +8,8 @@ add_executable(project main.c
         pesquisa_local/algoritmo_pesquisa_local.h
         evolutivo/algoritmo_evolutivo.c
         evolutivo/algoritmo_evolutivo.h
+        hibrido/hibrido.c
+        hibrido/hibrido.h
         funcao_problema/funcao.c
         funcao_problema/funcao.h
         utils.c

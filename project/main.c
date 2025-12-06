@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "pesquisa_local/algoritmo_pesquisa_local.h"
 #include "evolutivo/algoritmo_evolutivo.h"
+#include "hibrido/hibrido.h"
 #include "utils.h"
 
 #define DEFAULT_RUNS 10
@@ -64,13 +65,6 @@ int main(int argc, char *argv[])
          break;
          default:
             printf("\nOpcao invalida! Tente novamente.\n");
-      }
-
-      if(opcao != 0)
-      {
-         printf("\nPressione ENTER para continuar...");
-         getchar(); // Limpa buffer
-         getchar(); // Espera ENTER
       }
 
    } while(opcao != 0);
@@ -174,35 +168,58 @@ void executa_pesquisa_local(float *mat, int vert, int m){
 
 // EVOLUTIVO
 void executa_algoritmo_evolutivo(float *mat, int vert, int m){
+    /*info_ea param;
+    pchrom pop, parents;
+    chrom best_gen, best_ever;
+    int gen, run, runs;
+    float mbf = 0.0;*/
+
     info_ea param;
     pchrom pop, parents;
     chrom best_gen, best_ever;
     int gen, run, runs;
     float mbf = 0.0;
+    int opcao;
 
     // Pede parâmetros ao utilizador
     printf("\n--- PARAMETROS DO ALGORITMO EVOLUTIVO ---\n");
-    printf("Tamanho da populacao [default=100]: ");
-    scanf("%d", &param.popsize);
-    if(param.popsize <= 0) param.popsize = 100;
+    do {
+        printf("Tamanho da populacao (par, >=10) [default=100]: ");
+        scanf("%d", &param.popsize);
+    } while (param.popsize < 10 || param.popsize % 2 != 0);
 
-    printf("Probabilidade de recombinacao (0-1) [default=0.7]: ");
-    scanf("%f", &param.pr);
-    if(param.pr < 0 || param.pr > 1) param.pr = 0.7;
+    do {
+        printf("Probabilidade de recombinacao (0-1) [default=0.7]: ");
+        scanf("%f", &param.pr);
+    } while (param.pr < 0 || param.pr > 1);
 
-    printf("Probabilidade de mutacao (0-1) [default=0.01]: ");
-    scanf("%f", &param.pm);
-    if(param.pm < 0 || param.pm > 1) param.pm = 0.01;
+    do {
+        printf("Probabilidade de mutacao (0-1) [default=0.01]: ");
+        scanf("%f", &param.pm);
+    } while (param.pm < 0 || param.pm > 1);
 
-    printf("Numero de geracoes [default=100]: ");
-    scanf("%d", &param.numGenerations);
-    if(param.numGenerations <= 0) param.numGenerations = 100;
+    do {
+        printf("Numero de geracoes [default=100]: ");
+        scanf("%d", &param.numGenerations);
+    } while (param.numGenerations < 1);
 
-    printf("Numero de execucoes (runs) [default=10]: ");
-    scanf("%d", &runs);
-    if(runs <= 0) runs = 10;
+    do {
+        printf("Numero de execucoes (runs) [default=10]: ");
+        scanf("%d", &runs);
+    } while (runs < 1);
 
-    // Configura parâmetros
+    printf("\nMetodo de selecao:\n 1 - Torneio\n 2 - Roleta\nOpcao [1]: ");
+    scanf("%d", &opcao);
+    param.sel_method = (opcao == 2 ? 2 : 1);
+
+    printf("\nOperador de recombinacao:\n 1 - Uniforme\n 2 - 1 Ponto\nOpcao [1]: ");
+    scanf("%d", &opcao);
+    param.crossover_method = (opcao == 2 ? 2 : 1);
+
+    printf("\nOperador de mutacao:\n 1 - Swap\n 2 - Flip\nOpcao [1]: ");
+    scanf("%d", &opcao);
+    param.mutation_method = (opcao == 2 ? 2 : 1);
+
     param.numGenes = vert;
     param.m = m;
     param.tsize = 2;
@@ -212,6 +229,9 @@ void executa_algoritmo_evolutivo(float *mat, int vert, int m){
     printf("Geracoes: %d\n", param.numGenerations);
     printf("Prob. Recombinacao: %.2f\n", param.pr);
     printf("Prob. Mutacao: %.2f\n", param.pm);
+    printf("Selecao: %s\n", param.sel_method == 1 ? "Torneio" : "Roleta");
+    printf("Crossover: %s\n", param.crossover_method == 1 ? "Uniforme" : "1-Ponto");
+    printf("Mutacao: %s\n", param.mutation_method == 1 ? "Swap" : "Flip");
     printf("Runs: %d\n", runs);
     printf("==================================\n\n");
 
@@ -275,12 +295,90 @@ void executa_algoritmo_evolutivo(float *mat, int vert, int m){
 }
 
 // HIBRIDO
-void executa_algoritmo_hibrido(float *mat, int vert, int m)
-{
-   printf("\n[INFO] Algoritmo Hibrido ainda nao implementado.\n");
-   printf("       Sera implementado apos o Algoritmo Evolutivo.\n");
+void executa_algoritmo_hibrido(float *mat, int vert, int m){
+    struct info_ea EA_param;
+    int tipo_hibrido, num_iter_pl, freq_pl;
+    float resultado;
 
-   // TODO: Implementar híbrido
-   // Opção 1: Evolutivo + Pesquisa Local no final
-   // Opção 2: Pesquisa Local a cada X gerações
+    printf("\n========================================\n");
+    printf("       ALGORITMOS HIBRIDOS\n");
+    printf("========================================\n\n");
+
+    printf("Escolha o tipo de hibrido:\n");
+    printf("  1 - Evolutivo + Pesquisa Local no FINAL\n");
+    printf("  2 - Pesquisa Local DURANTE o Evolutivo\n");
+    printf("Opcao: ");
+    scanf("%d", &tipo_hibrido);
+
+    if (tipo_hibrido != 1 && tipo_hibrido != 2)
+    {
+        printf("\nOpcao invalida!\n");
+        return;
+    }
+
+    // Parâmetros do EA
+    printf("\n--- PARAMETROS DO EVOLUTIVO ---\n");
+    printf("Tamanho da populacao [100]: ");
+    scanf("%d", &EA_param.popsize);
+    if (EA_param.popsize < 10 || EA_param.popsize % 2 != 0)
+        EA_param.popsize = 100;
+
+    printf("Probabilidade de recombinacao (0-1) [0.7]: ");
+    scanf("%f", &EA_param.pr);
+    /*if (EA_param.pr < 0 || EA_param.pr > 1)
+        EA_param.pr = 0.7;*/
+
+    printf("Probabilidade de mutacao (0-1) [0.01]: ");
+    scanf("%f", &EA_param.pm);
+    if (EA_param.pm < 0 || EA_param.pm > 1)
+        EA_param.pm = 0.01;
+
+    printf("Numero de geracoes [100]: ");
+    scanf("%d", &EA_param.numGenerations);
+    if (EA_param.numGenerations < 1)
+        EA_param.numGenerations = 100;
+
+    // Parâmetros da PL
+    printf("\n--- PARAMETROS DA PESQUISA LOCAL ---\n");
+    printf("Numero de iteracoes PL [1000]: ");
+    scanf("%d", &num_iter_pl);
+    if (num_iter_pl < 100)
+        num_iter_pl = 1000;
+
+    if (tipo_hibrido == 2)
+    {
+        printf("Frequencia PL (a cada X geracoes) [10]: ");
+        scanf("%d", &freq_pl);
+        if (freq_pl < 1)
+            freq_pl = 10;
+    }
+
+    // Configura parâmetros
+    EA_param.numGenes = vert;
+    EA_param.m = m;
+    EA_param.tsize = 2;
+
+    printf("\n========== CONFIGURACAO ==========\n");
+    printf("Populacao: %d\n", EA_param.popsize);
+    printf("Geracoes: %d\n", EA_param.numGenerations);
+    printf("Prob. Recombinacao: %.2f\n", EA_param.pr);
+    printf("Prob. Mutacao: %.2f\n", EA_param.pm);
+    printf("Iteracoes PL: %d\n", num_iter_pl);
+    if (tipo_hibrido == 2)
+        printf("Frequencia PL: cada %d geracoes\n", freq_pl);
+    printf("==================================\n\n");
+
+    // Executa híbrido escolhido
+    if (tipo_hibrido == 1)
+    {
+        resultado = hibrido_evolutivo_depois_pl(mat, vert, m, EA_param, num_iter_pl);
+    }
+    else
+    {
+        resultado = hibrido_pl_durante_evolutivo(mat, vert, m, EA_param, num_iter_pl, freq_pl);
+    }
+
+    printf("\n========== RESULTADO FINAL ==========\n");
+    printf("Melhor fitness: %.2f\n", resultado);
+    printf("=====================================\n");
 }
