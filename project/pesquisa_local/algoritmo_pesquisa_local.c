@@ -1,7 +1,7 @@
 #include "algoritmo_pesquisa_local.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <tgmath.h>
+#include <math.h>
 
 #include "../funcao_problema/funcao.h"
 #include "../utils.h"
@@ -67,7 +67,7 @@ void gera_vizinho2(int a[], int b[], int n)
 // Trepa colinas first-choice
 // Parametros: solucao, matriz de adjacencias, numero de vertices e numero de iteracoes
 // Devolve o custo da melhor solucao encontrada
-float trepa_colinas_recristalizacao_simulada(int sol[], float *mat, int vert, int m)
+float trepa_colinas_recristalizacao_simulada(int sol[], float *mat, int vert, int m, int num_iter)
 {
     int *nova_sol, *best_sol, i;
     float custo, custo_viz, best_custo;
@@ -77,7 +77,7 @@ float trepa_colinas_recristalizacao_simulada(int sol[], float *mat, int vert, in
     tmax = 200.0;
     tmin = 1.0;
     t = tmax;
-    decrementoT = (tmax - tmin) / vert;
+    decrementoT = (tmax - tmin) / num_iter;
 
     // Alocação de memória
     nova_sol = malloc(sizeof(int) * vert);
@@ -89,11 +89,11 @@ float trepa_colinas_recristalizacao_simulada(int sol[], float *mat, int vert, in
     }
 
     // Avalia solução inicial
-    custo = calcula_fit_penalizado(sol, mat, vert, m);
+    custo = calcula_fit(sol, mat, vert, m);
     best_custo = custo;
     substitui(best_sol, sol, vert);
 
-    for (i = 0; i < vert; i++)
+    for (i = 0; i < num_iter; i++)
     {
         // Gera vizinho aleatoriamentet
         if(rand_01() < 0.5)
