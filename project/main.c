@@ -95,7 +95,7 @@ void executa_pesquisa_local(float *mat, int vert, int m){
     int *sol, *best;
     float custo, best_custo = 0.0;
     float mbf = 0.0;
-    int k, runs, num_iter;
+    int k, runs, num_iter, tipo_vizinhanca;
 
     // Pergunta parâmetros
     printf("\nNumero de execucoes (runs) [default=%d]: ", DEFAULT_RUNS);
@@ -110,10 +110,32 @@ void executa_pesquisa_local(float *mat, int vert, int m){
        num_iter = DEFAULT_ITER;
     }
 
+    printf("\nEscolha a vizinhanca:\n");
+    printf("  1 - Vizinhanca 1 (troca 1 par)\n");
+    printf("  2 - Vizinhanca 2 (troca 2 pares)\n");
+    printf("  3 - Ambas (alternancia aleatoria)\n");
+    printf("Opcao [3]: ");
+    scanf("%d", &tipo_vizinhanca);
+
+    if(tipo_vizinhanca < 1 || tipo_vizinhanca > 3)
+        tipo_vizinhanca = 3;  // Default: ambas
+
     printf("\n========== CONFIGURACAO ==========\n");
     printf("Algoritmo: Recristalizacao Simulada\n");
     printf("Runs: %d\n", runs);
     printf("Iteracoes: %d\n", num_iter);
+    switch(tipo_vizinhanca)
+    {
+        case 1:
+            printf("Vizinhanca: Viz1 (troca 1 par)\n");
+        break;
+        case 2:
+            printf("Vizinhanca: Viz2 (troca 2 pares)\n");
+        break;
+        case 3:
+            printf("Vizinhanca: Ambas (alternancia)\n");
+        break;
+    }
     printf("==================================\n\n");
 
     // Aloca soluções
@@ -135,8 +157,8 @@ void executa_pesquisa_local(float *mat, int vert, int m){
         printf("  Solucao inicial: ");
         escreve_sol(sol, vert);
 
-        // Aplica algoritmo (PASSA num_iter!)
-        custo = trepa_colinas_recristalizacao_simulada(sol, mat, vert, m, num_iter);
+        // Aplica algoritmo
+        custo = trepa_colinas_recristalizacao_simulada(sol, mat, vert, m, num_iter, tipo_vizinhanca);
 
         // Resultados
         printf("  Solucao final:   ");
@@ -259,12 +281,16 @@ void executa_algoritmo_evolutivo(float *mat, int vert, int m){
         }
 
         // Loop de gerações
+        // Loop de gerações
         for(gen = 1; gen <= param.numGenerations; gen++)
         {
-            // Seleção por torneio
-            tournament_ea(pop, param, parents);
+            // Seleção (usa o método escolhido)
+            if (param.sel_method == 1)
+                tournament_ea(pop, param, parents);
+            else
+                roleta(pop, param, parents);
 
-            // Operadores genéticos
+            // Operadores genéticos (já usa os métodos escolhidos internamente)
             genetic_operators_ea(parents, param, pop);
 
             // Avalia nova população

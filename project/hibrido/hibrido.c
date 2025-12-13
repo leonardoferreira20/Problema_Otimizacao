@@ -51,7 +51,7 @@ float hibrido_evolutivo_depois_pl(float *mat, int vert, int m, info_ea EA_param,
 
     // 3) APLICAR PESQUISA LOCAL A CADA INDIVIDUO DA POPULAÇÃO FINAL
     for (int i = 0; i < EA_param.popsize; i++){
-        pop[i].fitness = trepa_colinas_recristalizacao_simulada(pop[i].pontos, mat, vert, m, num_iter_pl);
+        pop[i].fitness = trepa_colinas_recristalizacao_simulada(pop[i].pontos, mat, vert, m, num_iter_pl, 3);
     }
 
     // Reavaliar fitness real
@@ -131,7 +131,7 @@ float hibrido_pl_durante_evolutivo(float *mat, int vert, int m, info_ea EA_param
                 }
 
                 if (idx != -1){
-                    pop[idx].fitness = trepa_colinas_recristalizacao_simulada(pop[idx].pontos, mat, vert, m, num_iter_pl);
+                    pop[idx].fitness = trepa_colinas_recristalizacao_simulada(pop[idx].pontos, mat, vert, m, num_iter_pl, 3);
                 }
             }
 

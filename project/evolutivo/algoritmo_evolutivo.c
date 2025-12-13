@@ -142,11 +142,24 @@ void roleta(pchrom pop, info_ea d, pchrom parents)
 // Aplica recombinação e mutação
 void genetic_operators_ea(pchrom parents, info_ea d, pchrom offspring)
 {
+    int i;
+
     // Recombinação
-    crossover_uniforme(parents, d, offspring);
+    if (d.crossover_method == 1)
+        crossover_uniforme(parents, d, offspring);
+    else
+        crossover_1ponto(parents, d, offspring);
+
+    for (i = 0; i < d.popsize; i++)
+    {
+        reparacao_ea(offspring[i].pontos, d);
+    }
 
     // Mutação
-    mutation_swap(offspring, d);
+    if (d.mutation_method == 1)
+        mutation_swap(offspring, d);
+    else
+        mutation_flip(offspring, d);
 }
 
 // Recombinação Uniforme
@@ -218,21 +231,36 @@ void crossover_1ponto(pchrom parents, info_ea d, pchrom offspring)
 // Mutação por Troca (Swap)
 void mutation_swap(pchrom offspring, info_ea d)
 {
-    int i, pos1, pos2;
+    int i, j, idx, pos1, pos2;
+    int posicoes_zero[MAX_VERTICES], posicoes_um[MAX_VERTICES];
+    int num_zeros, num_uns;
 
     for (i = 0; i < d.popsize; i++)
     {
         if (rand_01() < d.pm)
         {
-            // Encontra posição com 0
-            do
-                pos1 = random_l_h(0, d.numGenes - 1);
-            while (offspring[i].pontos[pos1] != 0);
+            // Lista todas as posições com 0 e 1
+            num_zeros = 0;
+            num_uns = 0;
 
-            // Encontra posição com 1
-            do
-                pos2 = random_l_h(0, d.numGenes - 1);
-            while (offspring[i].pontos[pos2] != 1);
+            for (j = 0; j < d.numGenes; j++)
+            {
+                if (offspring[i].pontos[j] == 0)
+                    posicoes_zero[num_zeros++] = j;
+                else
+                    posicoes_um[num_uns++] = j;
+            }
+
+            // Se não há 0s ou não há 1s, pula este indivíduo
+            if (num_zeros == 0 || num_uns == 0)
+                continue;
+
+            // Escolhe aleatoriamente uma posição de cada lista
+            idx = random_l_h(0, num_zeros - 1);
+            pos1 = posicoes_zero[idx];
+
+            idx = random_l_h(0, num_uns - 1);
+            pos2 = posicoes_um[idx];
 
             // Troca
             offspring[i].pontos[pos1] = 1;

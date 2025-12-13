@@ -67,15 +67,15 @@ void gera_vizinho2(int a[], int b[], int n)
 // Trepa colinas first-choice
 // Parametros: solucao, matriz de adjacencias, numero de vertices e numero de iteracoes
 // Devolve o custo da melhor solucao encontrada
-float trepa_colinas_recristalizacao_simulada(int sol[], float *mat, int vert, int m, int num_iter)
+float trepa_colinas_recristalizacao_simulada(int sol[], float *mat, int vert, int m, int num_iter, int tipo_vizinhanca)
 {
     int *nova_sol, *best_sol, i;
     float custo, custo_viz, best_custo;
     double tmax, tmin, t, decrementoT;
 
     // Parâmetros de temperatura
-    tmax = 200.0;
-    tmin = 1.0;
+    tmax = 10.0;
+    tmin = 0.5;
     t = tmax;
     decrementoT = (tmax - tmin) / num_iter;
 
@@ -93,13 +93,26 @@ float trepa_colinas_recristalizacao_simulada(int sol[], float *mat, int vert, in
     best_custo = custo;
     substitui(best_sol, sol, vert);
 
-    for (i = 0; i < num_iter; i++)
-    {
-        // Gera vizinho aleatoriamentet
-        if(rand_01() < 0.5)
-            gera_vizinho(sol, nova_sol, vert);
-        else
-            gera_vizinho2(sol, nova_sol, vert);
+    for (i = 0; i < num_iter; i++){
+        switch(tipo_vizinhanca){
+            case 1:  // Vizinhanca 1
+                gera_vizinho(sol, nova_sol, vert);
+            break;
+            case 2:  // Vizinhanca 2
+                gera_vizinho2(sol, nova_sol, vert);
+            break;
+            case 3:  // Ambas
+                if(rand_01() < 0.5)
+                    gera_vizinho(sol, nova_sol, vert);
+                else
+                    gera_vizinho2(sol, nova_sol, vert);
+            break;
+            default:
+                if(rand_01() < 0.5)
+                    gera_vizinho(sol, nova_sol, vert);
+                else
+                    gera_vizinho2(sol, nova_sol, vert);
+        }
 
         // Avalia vizinho
         custo_viz = calcula_fit(nova_sol, mat, vert, m);
